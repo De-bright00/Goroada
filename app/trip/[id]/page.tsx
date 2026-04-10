@@ -222,28 +222,8 @@ export default function TripDetailsPage({
                 </CardContent>
               </Card>
 
-              {/* Reviews */}
+              {/* Booking Card */}
               <Card>
-                <CardHeader>
-                  <CardTitle>Reviews</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8">
-                    <Star className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-secondary mb-2">
-                      No reviews yet
-                    </h3>
-                    <p className="text-muted-foreground">
-                      Be the first to review this trip after your journey
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Booking Card */}
-            <div className="lg:col-span-1">
-              <Card className="sticky top-24">
                 <CardContent className="p-6">
                   <div className="text-center mb-6">
                     <p className="text-sm text-muted-foreground">Price per seat</p>
@@ -287,11 +267,36 @@ export default function TripDetailsPage({
                   </p>
                 </CardContent>
               </Card>
+
+              {/* Reviews */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Reviews</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8">
+                    <Star className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-secondary mb-2">
+                      No reviews yet
+                    </h3>
+                    <p className="text-muted-foreground">
+                      Be the first to review this trip after your journey
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Booking Card - Sticky Sidebar */}
+            <div className="lg:col-span-1">
+              <div className="sticky top-24">
+                {/* Empty placeholder for desktop spacing */}
+              </div>
             </div>
           </div>
         </div>
       </main>
-
+                    
       <Footer />
     </div>
   )

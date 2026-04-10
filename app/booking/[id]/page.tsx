@@ -294,6 +294,21 @@ export default function BookingPage({
                     </div>
                   </div>
 
+                  <div className="border-t border-border pt-4 space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">
+                        &#8358;{trip.price.toLocaleString()} x {passengers}
+                      </span>
+                      <span>&#8358;{totalPrice.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between font-semibold text-lg">
+                      <span>Total</span>
+                      <span className="text-primary">
+                        &#8358;{totalPrice.toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+
                   <div className="border-t border-border pt-4 space-y-3">
                     <div className="flex items-start gap-3">
                       <MapPin className="w-4 h-4 text-primary mt-1" />
@@ -333,21 +348,6 @@ export default function BookingPage({
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Passengers</span>
                       <span className="font-medium">{passengers}</span>
-                    </div>
-                  </div>
-
-                  <div className="border-t border-border pt-4 space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">
-                        &#8358;{trip.price.toLocaleString()} x {passengers}
-                      </span>
-                      <span>&#8358;{totalPrice.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between font-semibold text-lg">
-                      <span>Total</span>
-                      <span className="text-primary">
-                        &#8358;{totalPrice.toLocaleString()}
-                      </span>
                     </div>
                   </div>
                 </CardContent>
