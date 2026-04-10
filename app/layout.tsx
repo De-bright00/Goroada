@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   description: 'Compare prices, book seats, and travel with trusted transport operators across Nigeria. Book intercity travel from Lagos to Abuja, Ibadan, Kaduna, and more.',
   generator: 'v0.app',
   icons: {
-    icon: '/favicon.ico',
+    icon: '/icon.png',
     apple: '/apple-icon.png',
   },
 }
