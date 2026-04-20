@@ -18,7 +18,6 @@ import {
   Gift,
   Copy,
   Check,
-  Clock,
   MapPin,
 } from "lucide-react"
 
@@ -454,11 +453,6 @@ function PaymentContent({ id }: { id: string }) {
                           {trip.fromTerminal}
                         </p>
                       </div>
-                    </div>
-
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                      <Clock className="w-4 h-4" />
-                      <span>{trip.duration}</span>
                     </div>
 
                     <div className="flex items-start gap-3">

@@ -29,8 +29,6 @@ const mockTrips: TripData[] = [
     fromTerminal: "Jibowu Terminal",
     toTerminal: "Utako Terminal",
     departureTime: "06:00",
-    arrivalTime: "14:30",
-    duration: "8h 30m",
     price: 18500,
     seatsAvailable: 12,
     rating: 4.5,
@@ -46,8 +44,6 @@ const mockTrips: TripData[] = [
     fromTerminal: "Ojota Terminal",
     toTerminal: "Wuse Terminal",
     departureTime: "07:30",
-    arrivalTime: "16:00",
-    duration: "8h 30m",
     price: 22000,
     seatsAvailable: 8,
     rating: 4.7,
@@ -63,8 +59,6 @@ const mockTrips: TripData[] = [
     fromTerminal: "Mile 2 Terminal",
     toTerminal: "Area 1 Terminal",
     departureTime: "08:00",
-    arrivalTime: "17:00",
-    duration: "9h 00m",
     price: 15000,
     seatsAvailable: 20,
     rating: 4.2,
@@ -80,8 +74,6 @@ const mockTrips: TripData[] = [
     fromTerminal: "Ajah Terminal",
     toTerminal: "Garki Terminal",
     departureTime: "09:00",
-    arrivalTime: "17:30",
-    duration: "8h 30m",
     price: 20000,
     seatsAvailable: 5,
     rating: 4.4,
@@ -97,14 +89,60 @@ const mockTrips: TripData[] = [
     fromTerminal: "Oshodi Terminal",
     toTerminal: "Central Area Terminal",
     departureTime: "10:00",
-    arrivalTime: "19:00",
-    duration: "9h 00m",
     price: 16500,
     seatsAvailable: 15,
     rating: 4.0,
     totalReviews: 2800,
     isVerified: true,
     amenities: ["AC"],
+  },
+]
+
+const mockReturnTrips: TripData[] = [
+  {
+    id: "return-1",
+    operator: "GUO Transport",
+    from: "Abuja",
+    to: "Lagos",
+    fromTerminal: "Utako Terminal",
+    toTerminal: "Jibowu Terminal",
+    departureTime: "14:00",
+    price: 18500,
+    seatsAvailable: 10,
+    rating: 4.5,
+    totalReviews: 1250,
+    isVerified: true,
+    amenities: ["AC", "WiFi", "USB Charging", "Snacks"],
+  },
+  {
+    id: "return-2",
+    operator: "ABC Transport",
+    from: "Abuja",
+    to: "Lagos",
+    fromTerminal: "Wuse Terminal",
+    toTerminal: "Ojota Terminal",
+    departureTime: "15:30",
+    price: 22000,
+    seatsAvailable: 6,
+    rating: 4.7,
+    totalReviews: 2100,
+    isVerified: true,
+    amenities: ["AC", "WiFi", "USB Charging", "Snacks", "Entertainment"],
+  },
+  {
+    id: "return-3",
+    operator: "Peace Mass Transit",
+    from: "Abuja",
+    to: "Lagos",
+    fromTerminal: "Area 1 Terminal",
+    toTerminal: "Mile 2 Terminal",
+    departureTime: "16:00",
+    price: 15000,
+    seatsAvailable: 18,
+    rating: 4.2,
+    totalReviews: 3500,
+    isVerified: true,
+    amenities: ["AC", "USB Charging"],
   },
 ]
 
@@ -240,7 +278,9 @@ function SearchContent() {
   const from = searchParams.get("from") || "Lagos"
   const to = searchParams.get("to") || "Abuja"
   const date = searchParams.get("date") || ""
+  const returnDate = searchParams.get("returnDate") || ""
   const passengers = searchParams.get("passengers") || "1"
+  const tripType = searchParams.get("tripType") || "one-way"
 
   const [priceRange, setPriceRange] = useState([5000, 50000])
   const [selectedOperators, setSelectedOperators] = useState<string[]>([])
@@ -249,7 +289,8 @@ function SearchContent() {
   const [sortBy, setSortBy] = useState("price")
 
   // Filter trips
-  const filteredTrips = mockTrips
+  const allTrips = tripType === "round-trip" ? [...mockTrips, ...mockReturnTrips] : mockTrips
+  const filteredTrips = allTrips
     .filter((trip) => {
       if (trip.price < priceRange[0] || trip.price > priceRange[1]) return false
       if (
@@ -263,11 +304,6 @@ function SearchContent() {
     .sort((a, b) => {
       if (sortBy === "price") return a.price - b.price
       if (sortBy === "rating") return b.rating - a.rating
-      if (sortBy === "duration") {
-        const aDuration = parseInt(a.duration.split("h")[0])
-        const bDuration = parseInt(b.duration.split("h")[0])
-        return aDuration - bDuration
-      }
       return 0
     })
 
@@ -284,8 +320,31 @@ function SearchContent() {
               defaultFrom={from}
               defaultTo={to}
               defaultDate={date}
+              defaultReturnDate={returnDate}
               defaultPassengers={passengers}
+              defaultTripType={tripType as "one-way" | "round-trip"}
             />
+          </div>
+        </div>
+
+        {/* Search Summary */}
+        <div className="bg-background border-b border-border py-4">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">
+                  {tripType === "round-trip" ? "Round Trip" : "One Way"}: {from} to {to}
+                </h1>
+                <p className="text-muted-foreground">
+                  {date && `${tripType === "round-trip" ? "Departure" : "Date"}: ${date}`}
+                  {tripType === "round-trip" && returnDate && ` • Return: ${returnDate}`}
+                  {passengers && ` • ${passengers} passenger${passengers !== "1" ? "s" : ""}`}
+                </p>
+              </div>
+              <div className="text-sm text-muted-foreground">
+                {filteredTrips.length} trip{filteredTrips.length !== 1 ? "s" : ""} found
+              </div>
+            </div>
           </div>
         </div>
 
@@ -375,41 +434,89 @@ function SearchContent() {
                     >
                       <option value="price">Price: Low to High</option>
                       <option value="rating">Rating: High to Low</option>
-                      <option value="duration">Duration: Shortest</option>
                     </select>
                   </div>
                 </div>
               </div>
 
               {/* Trip Cards */}
-              <div className="space-y-4">
-                {filteredTrips.length > 0 ? (
-                  filteredTrips.map((trip) => (
-                    <TripCard key={trip.id} trip={trip} />
-                  ))
-                ) : (
-                  <div className="bg-card rounded-xl p-12 text-center border border-border">
-                    <div className="w-16 h-16 rounded-full bg-muted mx-auto mb-4 flex items-center justify-center">
-                      <Filter className="w-8 h-8 text-muted-foreground" />
+              <div className="space-y-8">
+                {tripType === "round-trip" ? (
+                  <>
+                    {/* Outbound Trips */}
+                    <div>
+                      <h3 className="text-xl font-semibold text-foreground mb-4">
+                        Outbound: {from} to {to} on {date}
+                      </h3>
+                      <div className="space-y-4">
+                        {filteredTrips.filter(trip => trip.from === from && trip.to === to).length > 0 ? (
+                          filteredTrips
+                            .filter(trip => trip.from === from && trip.to === to)
+                            .map((trip) => (
+                              <TripCard key={trip.id} trip={trip} />
+                            ))
+                        ) : (
+                          <div className="bg-card rounded-xl p-8 text-center border border-border">
+                            <p className="text-muted-foreground">No outbound trips found for this date</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">
-                      No trips found
-                    </h3>
-                    <p className="text-muted-foreground mb-4">
-                      Try adjusting your filters or search for a different route
-                    </p>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setPriceRange([5000, 50000])
-                        setSelectedOperators([])
-                        setSelectedTimes([])
-                        setMinRating(0)
-                      }}
-                    >
-                      Reset Filters
-                    </Button>
-                  </div>
+
+                    {/* Return Trips */}
+                    <div>
+                      <h3 className="text-xl font-semibold text-foreground mb-4">
+                        Return: {to} to {from} on {returnDate || "Select return date"}
+                      </h3>
+                      <div className="space-y-4">
+                        {returnDate && filteredTrips.filter(trip => trip.from === to && trip.to === from).length > 0 ? (
+                          filteredTrips
+                            .filter(trip => trip.from === to && trip.to === from)
+                            .map((trip) => (
+                              <TripCard key={trip.id} trip={trip} />
+                            ))
+                        ) : (
+                          <div className="bg-card rounded-xl p-8 text-center border border-border">
+                            <p className="text-muted-foreground">
+                              {returnDate ? "No return trips found for this date" : "Please select a return date"}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  // One-way trips
+                  <>
+                    {filteredTrips.length > 0 ? (
+                      filteredTrips.map((trip) => (
+                        <TripCard key={trip.id} trip={trip} />
+                      ))
+                    ) : (
+                      <div className="bg-card rounded-xl p-12 text-center border border-border">
+                        <div className="w-16 h-16 rounded-full bg-muted mx-auto mb-4 flex items-center justify-center">
+                          <Filter className="w-8 h-8 text-muted-foreground" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-foreground mb-2">
+                          No trips found
+                        </h3>
+                        <p className="text-muted-foreground mb-4">
+                          Try adjusting your filters or search for a different route
+                        </p>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setPriceRange([5000, 50000])
+                            setSelectedOperators([])
+                            setSelectedTimes([])
+                            setMinRating(0)
+                          }}
+                        >
+                          Reset Filters
+                        </Button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>

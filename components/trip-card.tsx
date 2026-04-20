@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Clock, MapPin, Star, Users, Shield } from "lucide-react"
+import { MapPin, Star, Users, Shield } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -15,8 +15,6 @@ export interface TripData {
   fromTerminal: string
   toTerminal: string
   departureTime: string
-  arrivalTime: string
-  duration: string
   price: number
   seatsAvailable: number
   rating: number
@@ -72,12 +70,8 @@ export function TripCard({ trip }: TripCardProps) {
                 </p>
               </div>
 
-              {/* Duration */}
+              {/* Arrow */}
               <div className="flex-1 flex flex-col items-center">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Clock className="w-3.5 h-3.5" />
-                  {trip.duration}
-                </div>
                 <div className="w-full flex items-center gap-2 my-2">
                   <div className="w-2 h-2 rounded-full bg-primary" />
                   <div className="flex-1 h-px bg-border relative">
@@ -88,11 +82,8 @@ export function TripCard({ trip }: TripCardProps) {
                 <p className="text-xs text-muted-foreground">Direct</p>
               </div>
 
-              {/* Arrival */}
+              {/* Destination */}
               <div className="text-center">
-                <p className="text-2xl font-bold text-foreground">
-                  {trip.arrivalTime}
-                </p>
                 <p className="text-sm text-muted-foreground">{trip.to}</p>
                 <p className="text-xs text-muted-foreground">{trip.toTerminal}</p>
               </div>

@@ -6,7 +6,7 @@ import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { CheckCircle, Download, MapPin, Clock, Calendar, User, QrCode } from "lucide-react"
+import { CheckCircle, Download, MapPin, Calendar, User, QrCode } from "lucide-react"
 
 // Mock booking data
 const mockBooking = {
@@ -105,11 +105,6 @@ export default function SuccessPage({
                       {booking.fromTerminal}
                     </p>
                   </div>
-                </div>
-
-                <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <Clock className="w-4 h-4" />
-                  <span>{booking.duration}</span>
                 </div>
 
                 <div className="flex items-start gap-3">

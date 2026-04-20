@@ -12,7 +12,6 @@ import { Label } from "@/components/ui/label"
 import {
   ArrowLeft,
   Check,
-  Clock,
   MapPin,
   User,
   Phone,
@@ -22,8 +21,9 @@ import {
 
 const steps = [
   { id: 1, name: "Details" },
-  { id: 2, name: "Payment" },
-  { id: 3, name: "Confirmed" },
+  { id: 2, name: "Terms" },
+  { id: 3, name: "Payment" },
+  { id: 4, name: "Confirmed" },
 ]
 
 // Mock trip data
@@ -68,8 +68,14 @@ export default function BookingPage({
   }
 
   const handleContinue = () => {
-    if (currentStep < 2) {
-      router.push(`/payment/${id}?passengers=${passengers}&total=${totalPrice}`)
+    // Validate required fields
+    if (!formData.fullName || !formData.phone || !formData.email || !formData.emergencyName || !formData.emergencyPhone) {
+      alert("Please fill in all required fields including emergency contact information.")
+      return
+    }
+
+    if (currentStep < 3) {
+      router.push(`/terms/${id}?passengers=${passengers}&total=${totalPrice}`)
     }
   }
 
@@ -235,22 +241,23 @@ export default function BookingPage({
                   <div className="space-y-4">
                     <h3 className="font-semibold flex items-center gap-2">
                       <AlertCircle className="w-4 h-4 text-primary" />
-                      Emergency Contact (Optional)
+                      Emergency Contact *
                     </h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="emergencyName">Contact Name</Label>
+                        <Label htmlFor="emergencyName">Contact Name *</Label>
                         <Input
                           id="emergencyName"
                           name="emergencyName"
                           placeholder="Enter contact name"
                           value={formData.emergencyName}
                           onChange={handleInputChange}
+                          required
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="emergencyPhone">Contact Phone</Label>
+                        <Label htmlFor="emergencyPhone">Contact Phone *</Label>
                         <div className="relative">
                           <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                           <Input
@@ -260,6 +267,7 @@ export default function BookingPage({
                             value={formData.emergencyPhone}
                             onChange={handleInputChange}
                             className="pl-10"
+                            required
                           />
                         </div>
                       </div>
@@ -267,7 +275,7 @@ export default function BookingPage({
                   </div>
 
                   <Button className="w-full" size="lg" onClick={handleContinue}>
-                    Continue to Payment
+                    Proceed
                   </Button>
                 </CardContent>
               </Card>
@@ -318,11 +326,6 @@ export default function BookingPage({
                           {trip.fromTerminal}
                         </p>
                       </div>
-                    </div>
-
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                      <Clock className="w-4 h-4" />
-                      <span>{trip.duration}</span>
                     </div>
 
                     <div className="flex items-start gap-3">

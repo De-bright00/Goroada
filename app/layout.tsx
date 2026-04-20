@@ -8,10 +8,8 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 export const metadata: Metadata = {
   title: 'Goroada - Travel Across Nigeria, Smarter & Easier',
   description: 'Compare prices, book seats, and travel with trusted transport operators across Nigeria. Book intercity travel from Lagos to Abuja, Ibadan, Kaduna, and more.',
-  generator: 'v0.app',
   icons: {
     icon: '/icon.png',
-    apple: '/apple-icon.png',
   },
 }
 

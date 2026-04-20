@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { MapPin, Calendar, Users, ArrowRight, ArrowLeftRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Select,
   SelectContent,
@@ -31,7 +32,9 @@ interface SearchBoxProps {
   defaultFrom?: string
   defaultTo?: string
   defaultDate?: string
+  defaultReturnDate?: string
   defaultPassengers?: string
+  defaultTripType?: "one-way" | "round-trip"
 }
 
 export function SearchBox({
@@ -39,13 +42,17 @@ export function SearchBox({
   defaultFrom = "",
   defaultTo = "",
   defaultDate = "",
+  defaultReturnDate = "",
   defaultPassengers = "1",
+  defaultTripType = "one-way",
 }: SearchBoxProps) {
   const router = useRouter()
   const [from, setFrom] = useState(defaultFrom)
   const [to, setTo] = useState(defaultTo)
   const [date, setDate] = useState(defaultDate)
+  const [returnDate, setReturnDate] = useState(defaultReturnDate)
   const [passengers, setPassengers] = useState(defaultPassengers)
+  const [tripType, setTripType] = useState<"one-way" | "round-trip">(defaultTripType)
 
   const handleSwap = () => {
     const temp = from
@@ -59,13 +66,27 @@ export function SearchBox({
       to,
       date,
       passengers,
+      tripType,
     })
+    if (tripType === "round-trip" && returnDate) {
+      params.set("returnDate", returnDate)
+    }
     router.push(`/search?${params.toString()}`)
   }
 
   if (variant === "compact") {
     return (
       <div className="bg-card rounded-xl shadow-lg p-4 border border-border">
+        {/* Trip Type Selector */}
+        <div className="mb-3">
+          <Tabs value={tripType} onValueChange={(value) => setTripType(value as "one-way" | "round-trip")}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="one-way">One Way</TabsTrigger>
+              <TabsTrigger value="round-trip">Round Trip</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex-1 min-w-[140px]">
             <Select value={from} onValueChange={setFrom}>
@@ -120,9 +141,25 @@ export function SearchBox({
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 className="pl-10 bg-background"
+                placeholder="Departure"
               />
             </div>
           </div>
+
+          {tripType === "round-trip" && (
+            <div className="flex-1 min-w-[140px]">
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
+                <Input
+                  type="date"
+                  value={returnDate}
+                  onChange={(e) => setReturnDate(e.target.value)}
+                  className="pl-10 bg-background"
+                  placeholder="Return"
+                />
+              </div>
+            </div>
+          )}
 
           <div className="w-24">
             <Select value={passengers} onValueChange={setPassengers}>
@@ -152,7 +189,17 @@ export function SearchBox({
 
   return (
     <div className="bg-card rounded-2xl shadow-xl p-6 md:p-8 border border-border">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      {/* Trip Type Selector */}
+      <div className="mb-6">
+        <Tabs value={tripType} onValueChange={(value) => setTripType(value as "one-way" | "round-trip")}>
+          <TabsList className="grid w-full grid-cols-2 max-w-xs mx-auto">
+            <TabsTrigger value="one-way">One Way</TabsTrigger>
+            <TabsTrigger value="round-trip">Round Trip</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+
+      <div className={`grid grid-cols-1 md:grid-cols-2 ${tripType === "round-trip" ? "lg:grid-cols-5" : "lg:grid-cols-4"} gap-4`}>
         {/* From */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-muted-foreground">
@@ -210,7 +257,7 @@ export function SearchBox({
         {/* Date */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-muted-foreground">
-            Departure Date
+            {tripType === "round-trip" ? "Departure Date" : "Date"}
           </label>
           <div className="relative">
             <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
@@ -222,6 +269,24 @@ export function SearchBox({
             />
           </div>
         </div>
+
+        {/* Return Date (only for round trip) */}
+        {tripType === "round-trip" && (
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-muted-foreground">
+              Return Date
+            </label>
+            <div className="relative">
+              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
+              <Input
+                type="date"
+                value={returnDate}
+                onChange={(e) => setReturnDate(e.target.value)}
+                className="h-12 pl-11 bg-background"
+              />
+            </div>
+          </div>
+        )}
 
         {/* Passengers */}
         <div className="space-y-2">
