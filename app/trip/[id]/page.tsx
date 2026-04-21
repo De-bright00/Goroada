@@ -35,8 +35,6 @@ const mockTrip = {
   fromAddress: "123 Herbert Macaulay Way, Yaba, Lagos",
   toAddress: "Plot 456 Utako District, Abuja",
   departureTime: "06:00",
-  arrivalTime: "14:30",
-  duration: "8h 30m",
   price: 18500,
   seatsAvailable: 12,
   totalSeats: 40,
@@ -81,44 +79,46 @@ export default function TripDetailsPage({
             <div className="lg:col-span-2 space-y-6">
               {/* Operator Header */}
               <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 rounded-xl bg-secondary/10 flex items-center justify-center">
-                        <span className="text-2xl font-bold text-secondary">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-6 sm:justify-between">
+                    <div className="flex items-start gap-3 sm:gap-4 min-w-0">
+                      <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-secondary/10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-xl sm:text-2xl font-bold text-secondary">
                           {trip.operator.charAt(0)}
                         </span>
                       </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h1 className="text-2xl font-bold text-foreground">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <h1 className="text-lg sm:text-2xl font-bold text-foreground truncate">
                             {trip.operator}
                           </h1>
                           {trip.isVerified && (
                             <Badge
                               variant="secondary"
-                              className="bg-primary/10 text-primary"
+                              className="bg-primary/10 text-primary border-0 flex-shrink-0"
                             >
                               <Shield className="w-3 h-3 mr-1" />
                               Verified
                             </Badge>
                           )}
                         </div>
-                        <div className="flex items-center gap-2 mt-1">
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
                           <div className="flex items-center gap-1">
                             <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                            <span className="font-semibold">{trip.rating}</span>
+                            <span className="font-semibold text-sm">{trip.rating}</span>
                           </div>
-                          <span className="text-muted-foreground">
+                          <span className="text-xs sm:text-sm text-muted-foreground">
                             ({trip.totalReviews} reviews)
                           </span>
                         </div>
                       </div>
                     </div>
-                    <Badge variant="outline">{trip.busType}</Badge>
+                    <Badge variant="outline" className="flex-shrink-0 mt-2 sm:mt-0">
+                      {trip.busType}
+                    </Badge>
                   </div>
 
-                  <p className="mt-4 text-muted-foreground">
+                  <p className="mt-4 text-xs sm:text-sm text-muted-foreground">
                     {trip.operatorDescription}
                   </p>
                 </CardContent>
@@ -130,70 +130,65 @@ export default function TripDetailsPage({
                   <CardTitle>Route Details</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex flex-col md:flex-row gap-8">
+                  <div className="flex flex-col gap-6">
                     {/* Departure */}
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                          <MapPin className="w-5 h-5 text-primary" />
-                        </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">
-                            Departure
-                          </p>
-                          <p className="text-2xl font-bold">
-                            {trip.departureTime}
-                          </p>
-                        </div>
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-1">
+                        <MapPin className="w-5 h-5 text-primary" />
                       </div>
-                      <div className="ml-13 space-y-1">
-                        <p className="font-semibold">{trip.from}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {trip.fromTerminal}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-muted-foreground mb-1">
+                          Departure
                         </p>
-                        <p className="text-xs text-muted-foreground">
-                          {trip.fromAddress}
+                        <p className="text-lg sm:text-xl font-bold mb-1">
+                          {trip.departureTime}
                         </p>
+                        <div className="space-y-1">
+                          <p className="font-semibold">{trip.from}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {trip.fromTerminal}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {trip.fromAddress}
+                          </p>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Duration */}
-                    <div className="flex items-center justify-center">
+                    {/* Arrow - Centered */}
+                    <div className="flex items-center justify-center py-2">
                       <div className="flex flex-col items-center">
-                        <Clock className="w-5 h-5 text-muted-foreground mb-1" />
-                        <span className="text-sm font-medium">
-                          {trip.duration}
-                        </span>
-                        <div className="w-24 h-px bg-border my-2" />
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <ArrowLeft className="w-4 h-4 text-primary rotate-180" />
+                        </div>
+                        <div className="w-px h-6 bg-border my-2" />
                         <span className="text-xs text-muted-foreground">
-                          Direct
+                          Direct Route
                         </span>
                       </div>
                     </div>
 
-                    {/* Arrival */}
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center">
-                          <MapPin className="w-5 h-5 text-secondary" />
-                        </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">
-                            Arrival
-                          </p>
-                          <p className="text-2xl font-bold">
-                            {trip.arrivalTime}
-                          </p>
-                        </div>
+                    {/* Destination */}
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center flex-shrink-0 mt-1">
+                        <MapPin className="w-5 h-5 text-secondary" />
                       </div>
-                      <div className="ml-13 space-y-1">
-                        <p className="font-semibold">{trip.to}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {trip.toTerminal}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-muted-foreground mb-1">
+                          Destination
                         </p>
-                        <p className="text-xs text-muted-foreground">
-                          {trip.toAddress}
+                        <p className="text-lg sm:text-xl font-bold mb-1">
+                          {trip.to}
                         </p>
+                        <div className="space-y-1">
+                          <p className="font-semibold">{trip.to}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {trip.toTerminal}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {trip.toAddress}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>

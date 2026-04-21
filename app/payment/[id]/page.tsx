@@ -99,9 +99,9 @@ function PaymentContent({ id }: { id: string }) {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
-                <Label htmlFor="expiry">Expiry Date</Label>
+                <Label htmlFor="expiry" className="text-xs sm:text-sm">Expiry Date</Label>
                 <Input
                   id="expiry"
                   placeholder="MM/YY"
@@ -110,10 +110,11 @@ function PaymentContent({ id }: { id: string }) {
                     setCardData({ ...cardData, expiry: e.target.value })
                   }
                   maxLength={5}
+                  className="text-sm"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="cvv">CVV</Label>
+                <Label htmlFor="cvv" className="text-xs sm:text-sm">CVV</Label>
                 <Input
                   id="cvv"
                   placeholder="123"
@@ -123,12 +124,13 @@ function PaymentContent({ id }: { id: string }) {
                   }
                   maxLength={4}
                   type="password"
+                  className="text-sm"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="cardName">Name on Card</Label>
+              <Label htmlFor="cardName" className="text-xs sm:text-sm">Name on Card</Label>
               <Input
                 id="cardName"
                 placeholder="John Doe"
@@ -136,12 +138,12 @@ function PaymentContent({ id }: { id: string }) {
                 onChange={(e) =>
                   setCardData({ ...cardData, cardName: e.target.value })
                 }
+                className="text-sm"
               />
             </div>
 
             <Button
               className="w-full"
-              size="lg"
               onClick={handlePayment}
               disabled={processing}
             >
@@ -159,26 +161,26 @@ function PaymentContent({ id }: { id: string }) {
 
       case "bank":
         return (
-          <div className="space-y-6">
-            <div className="bg-muted/50 rounded-xl p-6 space-y-4">
-              <p className="text-sm text-muted-foreground text-center">
+          <div className="space-y-4 sm:space-y-6">
+            <div className="bg-muted/50 rounded-xl p-4 sm:p-6 space-y-3 sm:space-y-4">
+              <p className="text-xs sm:text-sm text-muted-foreground text-center">
                 Transfer the exact amount to the account below
               </p>
 
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-card rounded-lg">
-                  <div>
+              <div className="space-y-2 sm:space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-card rounded-lg gap-2">
+                  <div className="min-w-0">
                     <p className="text-xs text-muted-foreground">Bank Name</p>
-                    <p className="font-semibold">{bankDetails.bankName}</p>
+                    <p className="font-semibold text-sm truncate">{bankDetails.bankName}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-card rounded-lg">
-                  <div>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-card rounded-lg gap-2">
+                  <div className="min-w-0 flex-1">
                     <p className="text-xs text-muted-foreground">
                       Account Number
                     </p>
-                    <p className="font-semibold font-mono">
+                    <p className="font-semibold font-mono text-sm break-all">
                       {bankDetails.accountNumber}
                     </p>
                   </div>
@@ -186,6 +188,7 @@ function PaymentContent({ id }: { id: string }) {
                     variant="ghost"
                     size="sm"
                     onClick={() => handleCopy(bankDetails.accountNumber)}
+                    className="flex-shrink-0"
                   >
                     {copied ? (
                       <Check className="w-4 h-4 text-green-500" />
@@ -195,17 +198,17 @@ function PaymentContent({ id }: { id: string }) {
                   </Button>
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-card rounded-lg">
-                  <div>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-card rounded-lg gap-2">
+                  <div className="min-w-0">
                     <p className="text-xs text-muted-foreground">Account Name</p>
-                    <p className="font-semibold">{bankDetails.accountName}</p>
+                    <p className="font-semibold text-sm truncate">{bankDetails.accountName}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-primary/10 rounded-lg">
-                  <div>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-primary/10 rounded-lg gap-2">
+                  <div className="min-w-0">
                     <p className="text-xs text-muted-foreground">Amount</p>
-                    <p className="font-bold text-lg text-primary">
+                    <p className="font-bold text-base sm:text-lg text-primary">
                       &#8358;{total.toLocaleString()}
                     </p>
                   </div>
@@ -213,6 +216,7 @@ function PaymentContent({ id }: { id: string }) {
                     variant="ghost"
                     size="sm"
                     onClick={() => handleCopy(total.toString())}
+                    className="flex-shrink-0"
                   >
                     {copied ? (
                       <Check className="w-4 h-4 text-green-500" />
@@ -226,7 +230,6 @@ function PaymentContent({ id }: { id: string }) {
 
             <Button
               className="w-full"
-              size="lg"
               onClick={handlePayment}
               disabled={processing}
             >
@@ -244,23 +247,23 @@ function PaymentContent({ id }: { id: string }) {
 
       case "wallet":
         return (
-          <div className="space-y-6">
-            <div className="bg-muted/50 rounded-xl p-6 text-center">
-              <p className="text-sm text-muted-foreground mb-2">
+          <div className="space-y-4 sm:space-y-6">
+            <div className="bg-muted/50 rounded-xl p-4 sm:p-6 text-center">
+              <p className="text-xs sm:text-sm text-muted-foreground mb-2">
                 Wallet Balance
               </p>
-              <p className="text-3xl font-bold text-secondary">
+              <p className="text-2xl sm:text-3xl font-bold text-secondary">
                 &#8358;{walletBalance.toLocaleString()}
               </p>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3 text-sm">
               <div className="flex items-center justify-between py-2">
-                <span className="text-muted-foreground">Trip Fare</span>
-                <span>&#8358;{total.toLocaleString()}</span>
+                <span className="text-muted-foreground text-xs sm:text-sm">Trip Fare</span>
+                <span className="font-medium">&#8358;{total.toLocaleString()}</span>
               </div>
               <div className="flex items-center justify-between py-2 border-t border-border">
-                <span className="text-muted-foreground">Balance After</span>
+                <span className="text-muted-foreground text-xs sm:text-sm">Balance After</span>
                 <span
                   className={
                     walletBalance >= total
@@ -276,7 +279,6 @@ function PaymentContent({ id }: { id: string }) {
             {walletBalance >= total ? (
               <Button
                 className="w-full"
-                size="lg"
                 onClick={handlePayment}
                 disabled={processing}
               >
@@ -291,7 +293,7 @@ function PaymentContent({ id }: { id: string }) {
               </Button>
             ) : (
               <div className="space-y-3">
-                <p className="text-sm text-destructive text-center">
+                <p className="text-xs sm:text-sm text-destructive text-center">
                   Insufficient wallet balance
                 </p>
                 <Button variant="outline" className="w-full" asChild>
@@ -312,30 +314,30 @@ function PaymentContent({ id }: { id: string }) {
       <Navbar />
 
       <main className="flex-1">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           {/* Back Button */}
-          <Button variant="ghost" className="mb-6" asChild>
+          <Button variant="ghost" className="mb-4 sm:mb-6" asChild>
             <Link href={`/booking/${id}`}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to booking
             </Link>
           </Button>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
             {/* Payment Methods */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-2 space-y-4 sm:space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Select Payment Method</CardTitle>
+                  <CardTitle className="text-lg sm:text-xl">Select Payment Method</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <RadioGroup
                     value={paymentMethod}
                     onValueChange={setPaymentMethod}
-                    className="space-y-3"
+                    className="space-y-2 sm:space-y-3"
                   >
                     <div
-                      className={`flex items-center space-x-3 p-4 rounded-xl border-2 cursor-pointer transition-colors ${
+                      className={`flex items-center gap-3 p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-colors ${
                         paymentMethod === "card"
                           ? "border-primary bg-primary/5"
                           : "border-border hover:border-primary/50"
@@ -343,17 +345,17 @@ function PaymentContent({ id }: { id: string }) {
                       onClick={() => setPaymentMethod("card")}
                     >
                       <RadioGroupItem value="card" id="card" />
-                      <CreditCard className="w-5 h-5 text-primary" />
+                      <CreditCard className="w-5 h-5 text-primary flex-shrink-0" />
                       <Label htmlFor="card" className="flex-1 cursor-pointer">
-                        <span className="font-medium">Card Payment</span>
-                        <p className="text-sm text-muted-foreground">
+                        <span className="font-medium text-sm">Card Payment</span>
+                        <p className="text-xs text-muted-foreground">
                           Pay with debit or credit card
                         </p>
                       </Label>
                     </div>
 
                     <div
-                      className={`flex items-center space-x-3 p-4 rounded-xl border-2 cursor-pointer transition-colors ${
+                      className={`flex items-center gap-3 p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-colors ${
                         paymentMethod === "bank"
                           ? "border-primary bg-primary/5"
                           : "border-border hover:border-primary/50"
@@ -361,17 +363,17 @@ function PaymentContent({ id }: { id: string }) {
                       onClick={() => setPaymentMethod("bank")}
                     >
                       <RadioGroupItem value="bank" id="bank" />
-                      <Building2 className="w-5 h-5 text-primary" />
+                      <Building2 className="w-5 h-5 text-primary flex-shrink-0" />
                       <Label htmlFor="bank" className="flex-1 cursor-pointer">
-                        <span className="font-medium">Bank Transfer</span>
-                        <p className="text-sm text-muted-foreground">
+                        <span className="font-medium text-sm">Bank Transfer</span>
+                        <p className="text-xs text-muted-foreground">
                           Transfer directly to our bank account
                         </p>
                       </Label>
                     </div>
 
                     <div
-                      className={`flex items-center space-x-3 p-4 rounded-xl border-2 cursor-pointer transition-colors ${
+                      className={`flex items-center gap-3 p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-colors ${
                         paymentMethod === "wallet"
                           ? "border-primary bg-primary/5"
                           : "border-border hover:border-primary/50"
@@ -379,10 +381,10 @@ function PaymentContent({ id }: { id: string }) {
                       onClick={() => setPaymentMethod("wallet")}
                     >
                       <RadioGroupItem value="wallet" id="wallet" />
-                      <Wallet className="w-5 h-5 text-primary" />
-                      <Label htmlFor="wallet" className="flex-1 cursor-pointer">
-                        <span className="font-medium">Goroada Wallet</span>
-                        <p className="text-sm text-muted-foreground">
+                      <Wallet className="w-5 h-5 text-primary flex-shrink-0" />
+                      <Label htmlFor="wallet" className="flex-1 cursor-pointer min-w-0">
+                        <span className="font-medium text-sm">Goroada Wallet</span>
+                        <p className="text-xs text-muted-foreground truncate">
                           Balance: &#8358;{walletBalance.toLocaleString()}
                         </p>
                       </Label>
@@ -394,7 +396,7 @@ function PaymentContent({ id }: { id: string }) {
               {/* Payment Form */}
               <Card>
                 <CardHeader>
-                  <CardTitle>
+                  <CardTitle className="text-base sm:text-lg">
                     {paymentMethod === "card" && "Card Details"}
                     {paymentMethod === "bank" && "Bank Transfer"}
                     {paymentMethod === "wallet" && "Wallet Payment"}
@@ -405,17 +407,16 @@ function PaymentContent({ id }: { id: string }) {
 
               {/* Referral Code */}
               <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-4">
-                    <Gift className="w-5 h-5 text-primary" />
-                    <div className="flex-1">
-                      <Input
-                        placeholder="Enter referral code (optional)"
-                        value={referralCode}
-                        onChange={(e) => setReferralCode(e.target.value)}
-                      />
-                    </div>
-                    <Button variant="outline" disabled={!referralCode}>
+                <CardContent className="p-3 sm:p-4">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+                    <Gift className="w-5 h-5 text-primary flex-shrink-0 hidden sm:block" />
+                    <Input
+                      placeholder="Referral code (optional)"
+                      value={referralCode}
+                      onChange={(e) => setReferralCode(e.target.value)}
+                      className="text-sm"
+                    />
+                    <Button variant="outline" size="sm" disabled={!referralCode} className="flex-shrink-0">
                       Apply
                     </Button>
                   </div>
@@ -427,62 +428,62 @@ function PaymentContent({ id }: { id: string }) {
             <div className="lg:col-span-1">
               <Card className="sticky top-24">
                 <CardHeader>
-                  <CardTitle>Trip Summary</CardTitle>
+                  <CardTitle className="text-base sm:text-lg">Trip Summary</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
-                      <span className="text-sm font-bold text-secondary">
+                <CardContent className="space-y-3 sm:space-y-4 text-sm">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-secondary/10 flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs sm:text-sm font-bold text-secondary">
                         {trip.operator.charAt(0)}
                       </span>
                     </div>
-                    <div>
-                      <p className="font-semibold">{trip.operator}</p>
-                      <p className="text-sm text-muted-foreground">
+                    <div className="min-w-0">
+                      <p className="font-semibold text-xs sm:text-sm truncate">{trip.operator}</p>
+                      <p className="text-xs text-muted-foreground truncate">
                         {trip.busType}
                       </p>
                     </div>
                   </div>
 
-                  <div className="border-t border-border pt-4 space-y-3">
+                  <div className="border-t border-border pt-3 sm:pt-4 space-y-2 sm:space-y-3">
                     <div className="flex items-start gap-3">
-                      <MapPin className="w-4 h-4 text-primary mt-1" />
-                      <div>
-                        <p className="font-medium">{trip.from}</p>
-                        <p className="text-sm text-muted-foreground">
+                      <MapPin className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="font-medium text-xs sm:text-sm truncate">{trip.from}</p>
+                        <p className="text-xs text-muted-foreground truncate">
                           {trip.fromTerminal}
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3">
-                      <MapPin className="w-4 h-4 text-secondary mt-1" />
-                      <div>
-                        <p className="font-medium">{trip.to}</p>
-                        <p className="text-sm text-muted-foreground">
+                    <div className="flex items-start gap-2 sm:gap-3">
+                      <MapPin className="w-4 h-4 text-secondary mt-0.5 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="font-medium text-xs sm:text-sm truncate">{trip.to}</p>
+                        <p className="text-xs text-muted-foreground truncate">
                           {trip.toTerminal}
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="border-t border-border pt-4 space-y-2">
-                    <div className="flex justify-between text-sm">
+                  <div className="border-t border-border pt-3 sm:pt-4 space-y-1 sm:space-y-2 text-xs sm:text-sm">
+                    <div className="flex justify-between">
                       <span className="text-muted-foreground">Date</span>
                       <span className="font-medium">{trip.date}</span>
                     </div>
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between">
                       <span className="text-muted-foreground">Departure</span>
                       <span className="font-medium">{trip.departureTime}</span>
                     </div>
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between">
                       <span className="text-muted-foreground">Passengers</span>
                       <span className="font-medium">{passengers}</span>
                     </div>
                   </div>
 
-                  <div className="border-t border-border pt-4">
-                    <div className="flex justify-between font-semibold text-lg">
+                  <div className="border-t border-border pt-3 sm:pt-4">
+                    <div className="flex justify-between font-semibold text-base sm:text-lg">
                       <span>Total</span>
                       <span className="text-primary">
                         &#8358;{total.toLocaleString()}

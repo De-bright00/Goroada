@@ -94,19 +94,17 @@ export default function BookingPage({
           </Button>
 
           {/* Progress Steps */}
-          <div className="mb-8">
+          <div className="mb-6 sm:mb-8 overflow-x-auto">
             <nav aria-label="Progress">
-              <ol className="flex items-center justify-center">
+              <ol className="flex items-center justify-center gap-2 sm:gap-4 min-w-max">
                 {steps.map((step, index) => (
                   <li
                     key={step.id}
-                    className={`flex items-center ${
-                      index < steps.length - 1 ? "flex-1" : ""
-                    }`}
+                    className={`flex items-center gap-2 sm:gap-4`}
                   >
-                    <div className="flex items-center">
+                    <div className="flex items-center gap-1 sm:gap-3 flex-shrink-0">
                       <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                        className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
                           step.id < currentStep
                             ? "bg-primary text-primary-foreground"
                             : step.id === currentStep
@@ -115,13 +113,13 @@ export default function BookingPage({
                         }`}
                       >
                         {step.id < currentStep ? (
-                          <Check className="w-5 h-5" />
+                          <Check className="w-4 h-4" />
                         ) : (
-                          step.id
+                          <span className="text-xs sm:text-sm font-medium">{step.id}</span>
                         )}
                       </div>
                       <span
-                        className={`ml-3 text-sm font-medium ${
+                        className={`text-xs sm:text-sm font-medium hidden xs:inline ${
                           step.id <= currentStep
                             ? "text-foreground"
                             : "text-muted-foreground"
@@ -132,7 +130,7 @@ export default function BookingPage({
                     </div>
                     {index < steps.length - 1 && (
                       <div
-                        className={`flex-1 h-0.5 mx-4 ${
+                        className={`w-4 sm:w-8 h-0.5 ${
                           step.id < currentStep ? "bg-primary" : "bg-muted"
                         }`}
                       />
@@ -143,21 +141,21 @@ export default function BookingPage({
             </nav>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
             {/* Form */}
             <div className="lg:col-span-2">
               <Card>
                 <CardHeader>
-                  <CardTitle>Passenger Details</CardTitle>
+                  <CardTitle className="text-lg sm:text-xl">Passenger Details</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent className="space-y-4 sm:space-y-6">
                   {/* Number of Passengers */}
                   <div className="space-y-2">
-                    <Label>Number of Passengers</Label>
-                    <div className="flex items-center gap-4">
+                    <Label className="text-sm sm:text-base">Number of Passengers</Label>
+                    <div className="flex items-center gap-3 sm:gap-4">
                       <Button
                         variant="outline"
-                        size="icon"
+                        size="sm"
                         onClick={() =>
                           setPassengers(Math.max(1, passengers - 1))
                         }
@@ -165,12 +163,12 @@ export default function BookingPage({
                       >
                         -
                       </Button>
-                      <span className="text-xl font-semibold w-8 text-center">
+                      <span className="text-lg sm:text-xl font-semibold w-6 sm:w-8 text-center">
                         {passengers}
                       </span>
                       <Button
                         variant="outline"
-                        size="icon"
+                        size="sm"
                         onClick={() =>
                           setPassengers(
                             Math.min(trip.seatsAvailable, passengers + 1)
@@ -181,49 +179,50 @@ export default function BookingPage({
                         +
                       </Button>
                     </div>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       {trip.seatsAvailable} seats available
                     </p>
                   </div>
 
                   {/* Primary Passenger */}
                   <div className="space-y-4">
-                    <h3 className="font-semibold flex items-center gap-2">
-                      <User className="w-4 h-4 text-primary" />
+                    <h3 className="font-semibold text-sm sm:text-base flex items-center gap-2">
+                      <User className="w-4 h-4 text-primary flex-shrink-0" />
                       Primary Passenger
                     </h3>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="fullName">Full Name *</Label>
+                        <Label htmlFor="fullName" className="text-xs sm:text-sm">Full Name *</Label>
                         <Input
                           id="fullName"
                           name="fullName"
                           placeholder="Enter full name"
                           value={formData.fullName}
                           onChange={handleInputChange}
+                          className="text-sm"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="phone">Phone Number *</Label>
+                        <Label htmlFor="phone" className="text-xs sm:text-sm">Phone Number *</Label>
                         <div className="relative">
-                          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground flex-shrink-0" />
                           <Input
                             id="phone"
                             name="phone"
                             placeholder="08012345678"
                             value={formData.phone}
                             onChange={handleInputChange}
-                            className="pl-10"
+                            className="pl-10 text-sm"
                           />
                         </div>
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email Address *</Label>
+                      <Label htmlFor="email" className="text-xs sm:text-sm">Email Address *</Label>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground flex-shrink-0" />
                         <Input
                           id="email"
                           name="email"
@@ -231,7 +230,7 @@ export default function BookingPage({
                           placeholder="you@example.com"
                           value={formData.email}
                           onChange={handleInputChange}
-                          className="pl-10"
+                          className="pl-10 text-sm"
                         />
                       </div>
                     </div>
@@ -239,14 +238,14 @@ export default function BookingPage({
 
                   {/* Emergency Contact */}
                   <div className="space-y-4">
-                    <h3 className="font-semibold flex items-center gap-2">
-                      <AlertCircle className="w-4 h-4 text-primary" />
+                    <h3 className="font-semibold text-sm sm:text-base flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 text-primary flex-shrink-0" />
                       Emergency Contact *
                     </h3>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="emergencyName">Contact Name *</Label>
+                        <Label htmlFor="emergencyName" className="text-xs sm:text-sm">Contact Name *</Label>
                         <Input
                           id="emergencyName"
                           name="emergencyName"
@@ -254,19 +253,20 @@ export default function BookingPage({
                           value={formData.emergencyName}
                           onChange={handleInputChange}
                           required
+                          className="text-sm"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="emergencyPhone">Contact Phone *</Label>
+                        <Label htmlFor="emergencyPhone" className="text-xs sm:text-sm">Contact Phone *</Label>
                         <div className="relative">
-                          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground flex-shrink-0" />
                           <Input
                             id="emergencyPhone"
                             name="emergencyPhone"
-                            placeholder="08012345678"
+                            placeholder="07043543917"
                             value={formData.emergencyPhone}
                             onChange={handleInputChange}
-                            className="pl-10"
+                            className="pl-10 text-sm"
                             required
                           />
                         </div>
@@ -274,7 +274,7 @@ export default function BookingPage({
                     </div>
                   </div>
 
-                  <Button className="w-full" size="lg" onClick={handleContinue}>
+                  <Button className="w-full" onClick={handleContinue}>
                     Proceed
                   </Button>
                 </CardContent>
@@ -285,18 +285,18 @@ export default function BookingPage({
             <div className="lg:col-span-1">
               <Card className="sticky top-24">
                 <CardHeader>
-                  <CardTitle>Trip Summary</CardTitle>
+                  <CardTitle className="text-base sm:text-lg">Trip Summary</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
-                      <span className="text-sm font-bold text-secondary">
+                <CardContent className="space-y-3 sm:space-y-4 text-sm">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-secondary/10 flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs sm:text-sm font-bold text-secondary">
                         {trip.operator.charAt(0)}
                       </span>
                     </div>
-                    <div>
-                      <p className="font-semibold">{trip.operator}</p>
-                      <p className="text-sm text-muted-foreground">
+                    <div className="min-w-0">
+                      <p className="font-semibold text-xs sm:text-sm truncate">{trip.operator}</p>
+                      <p className="text-xs text-muted-foreground truncate">
                         {trip.busType}
                       </p>
                     </div>
