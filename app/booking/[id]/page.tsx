@@ -1,6 +1,6 @@
 "use client"
 
-import { use, useState } from "react"
+import { use, useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Navbar } from "@/components/navbar"
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { toast } from "sonner"
 import {
   ArrowLeft,
   Check,
@@ -17,6 +18,7 @@ import {
   Phone,
   Mail,
   AlertCircle,
+  Clock,
 } from "lucide-react"
 
 const steps = [
@@ -26,7 +28,7 @@ const steps = [
   { id: 4, name: "Confirmed" },
 ]
 
-// Mock trip data
+// Mock trip fallback data
 const mockTrip = {
   id: "1",
   operator: "GUO Transport",
@@ -50,8 +52,12 @@ export default function BookingPage({
 }) {
   const { id } = use(params)
   const router = useRouter()
-  const [currentStep, setCurrentStep] = useState(1)
+  
+  const [trip, setTrip] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [bookingLoading, setBookingLoading] = useState(false)
   const [passengers, setPassengers] = useState(1)
+  
   const [formData, setFormData] = useState({
     fullName: "",
     phone: "",
@@ -60,24 +66,117 @@ export default function BookingPage({
     emergencyPhone: "",
   })
 
-  const trip = { ...mockTrip, id }
-  const totalPrice = trip.price * passengers
+  // Load trip details
+  useEffect(() => {
+    async function loadTrip() {
+      try {
+        setLoading(true)
+        // Query our search API to fetch the trip
+        const res = await fetch(`/api/trips/search?from=Lagos&to=Abuja`)
+        if (res.ok) {
+          const trips = await res.json()
+          const matched = trips.find((t: any) => t.id === id)
+          if (matched) {
+            setTrip(matched)
+            return
+          }
+        }
+        // Fallback
+        setTrip({ ...mockTrip, id })
+      } catch (err) {
+        console.error("Failed to load trip:", err)
+        setTrip({ ...mockTrip, id })
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadTrip()
+  }, [id])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
-  const handleContinue = () => {
-    // Validate required fields
-    if (!formData.fullName || !formData.phone || !formData.email || !formData.emergencyName || !formData.emergencyPhone) {
-      alert("Please fill in all required fields including emergency contact information.")
+  const handleContinue = async () => {
+    // Validate inputs
+    if (
+      !formData.fullName ||
+      !formData.phone ||
+      !formData.email ||
+      !formData.emergencyName ||
+      !formData.emergencyPhone
+    ) {
+      toast.error("Please fill in all required fields including emergency contact.")
       return
     }
 
-    if (currentStep < 3) {
-      router.push(`/terms/${id}?passengers=${passengers}&total=${totalPrice}`)
+    try {
+      setBookingLoading(true)
+      
+      // Step 1: Create atomic booking hold in DB
+      const holdRes = await fetch("/api/bookings/hold", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tripId: id,
+          seatCount: passengers,
+        }),
+      })
+
+      const holdData = await holdRes.json()
+
+      if (!holdRes.ok) {
+        if (holdData.error === "INSUFFICIENT_SEATS") {
+          toast.error("Insufficient seats available! Someone else might have booked the last seat.")
+        } else {
+          toast.error(holdData.message || "Failed to create booking hold.")
+        }
+        return
+      }
+
+      const { bookingId, totalAmount } = holdData
+
+      // Step 2: Attach passenger details
+      const passengerList = [{ fullName: formData.fullName, phone: formData.phone }]
+      // Add placeholders for subsequent passengers if booking multiple seats
+      for (let i = 2; i <= passengers; i++) {
+        passengerList.push({
+          fullName: `${formData.fullName} (Passenger ${i})`,
+          phone: formData.phone,
+        })
+      }
+
+      const passengerRes = await fetch(`/api/bookings/${bookingId}/passengers`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ passengers: passengerList }),
+      })
+
+      if (!passengerRes.ok) {
+        toast.warn("Could not save passenger list details, but hold is active.")
+      }
+
+      // Step 3: Redirect to terms page with booking ID
+      toast.success("Seats held successfully! Complete payment in 10 minutes.")
+      router.push(`/terms/${bookingId}?passengers=${passengers}&total=${totalAmount}`)
+
+    } catch (err: any) {
+      console.error("Booking proceed error:", err)
+      toast.error("An error occurred during booking. Please try again.")
+    } finally {
+      setBookingLoading(false)
     }
   }
+
+  if (loading || !trip) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    )
+  }
+
+  const totalPrice = trip.price * passengers
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -98,42 +197,27 @@ export default function BookingPage({
             <nav aria-label="Progress">
               <ol className="flex items-center justify-center gap-2 sm:gap-4 min-w-max">
                 {steps.map((step, index) => (
-                  <li
-                    key={step.id}
-                    className={`flex items-center gap-2 sm:gap-4`}
-                  >
+                  <li key={step.id} className="flex items-center gap-2 sm:gap-4">
                     <div className="flex items-center gap-1 sm:gap-3 flex-shrink-0">
                       <div
                         className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                          step.id < currentStep
-                            ? "bg-primary text-primary-foreground"
-                            : step.id === currentStep
-                            ? "bg-primary text-primary-foreground"
+                          step.id === 1
+                            ? "bg-primary text-primary-foreground font-bold"
                             : "bg-muted text-muted-foreground"
                         }`}
                       >
-                        {step.id < currentStep ? (
-                          <Check className="w-4 h-4" />
-                        ) : (
-                          <span className="text-xs sm:text-sm font-medium">{step.id}</span>
-                        )}
+                        {step.id}
                       </div>
                       <span
-                        className={`text-xs sm:text-sm font-medium hidden xs:inline ${
-                          step.id <= currentStep
-                            ? "text-foreground"
-                            : "text-muted-foreground"
+                        className={`text-xs sm:text-sm font-medium ${
+                          step.id === 1 ? "text-foreground" : "text-muted-foreground"
                         }`}
                       >
                         {step.name}
                       </span>
                     </div>
                     {index < steps.length - 1 && (
-                      <div
-                        className={`w-4 sm:w-8 h-0.5 ${
-                          step.id < currentStep ? "bg-primary" : "bg-muted"
-                        }`}
-                      />
+                      <div className="w-4 sm:w-8 h-0.5 bg-muted" />
                     )}
                   </li>
                 ))}
@@ -156,9 +240,7 @@ export default function BookingPage({
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() =>
-                          setPassengers(Math.max(1, passengers - 1))
-                        }
+                        onClick={() => setPassengers(Math.max(1, passengers - 1))}
                         disabled={passengers <= 1}
                       >
                         -
@@ -170,9 +252,7 @@ export default function BookingPage({
                         variant="outline"
                         size="sm"
                         onClick={() =>
-                          setPassengers(
-                            Math.min(trip.seatsAvailable, passengers + 1)
-                          )
+                          setPassengers(Math.min(trip.seatsAvailable, passengers + 1))
                         }
                         disabled={passengers >= trip.seatsAvailable}
                       >
@@ -252,7 +332,6 @@ export default function BookingPage({
                           placeholder="Enter contact name"
                           value={formData.emergencyName}
                           onChange={handleInputChange}
-                          required
                           className="text-sm"
                         />
                       </div>
@@ -267,15 +346,21 @@ export default function BookingPage({
                             value={formData.emergencyPhone}
                             onChange={handleInputChange}
                             className="pl-10 text-sm"
-                            required
                           />
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <Button className="w-full" onClick={handleContinue}>
-                    Proceed
+                  <Button className="w-full" onClick={handleContinue} disabled={bookingLoading}>
+                    {bookingLoading ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                        Holding seats...
+                      </>
+                    ) : (
+                      "Proceed"
+                    )}
                   </Button>
                 </CardContent>
               </Card>
@@ -347,10 +432,6 @@ export default function BookingPage({
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Departure</span>
                       <span className="font-medium">{trip.departureTime}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Passengers</span>
-                      <span className="font-medium">{passengers}</span>
                     </div>
                   </div>
                 </CardContent>

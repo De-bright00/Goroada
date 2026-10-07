@@ -123,4 +123,24 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* iOS Safari: native date/time inputs ignore width:100% and overflow
+     their container. Reset appearance so they size like normal inputs. */
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"] {
+    -webkit-appearance: none;
+    appearance: none;
+    display: block;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  input[type="date"]::-webkit-date-and-time-value,
+  input[type="time"]::-webkit-date-and-time-value,
+  input[type="datetime-local"]::-webkit-date-and-time-value {
+    text-align: left;
+    margin: 0;
+  }
 }

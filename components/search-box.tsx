@@ -53,6 +53,7 @@ export function SearchBox({
   const [returnDate, setReturnDate] = useState(defaultReturnDate)
   const [passengers, setPassengers] = useState(defaultPassengers)
   const [tripType, setTripType] = useState<"one-way" | "round-trip">(defaultTripType)
+  const today = new Date().toISOString().split("T")[0]
 
   const handleSwap = () => {
     const temp = from
@@ -140,6 +141,7 @@ export function SearchBox({
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
+                min={today}
                 className="pl-10 bg-background"
                 placeholder="Departure"
               />
@@ -154,6 +156,7 @@ export function SearchBox({
                   type="date"
                   value={returnDate}
                   onChange={(e) => setReturnDate(e.target.value)}
+                  min={date || today}
                   className="pl-10 bg-background"
                   placeholder="Return"
                 />
@@ -201,12 +204,12 @@ export function SearchBox({
 
       <div className={`grid grid-cols-1 md:grid-cols-2 ${tripType === "round-trip" ? "lg:grid-cols-5" : "lg:grid-cols-4"} gap-4`}>
         {/* From */}
-        <div className="space-y-2">
+        <div className="space-y-2 min-w-0">
           <label className="text-sm font-medium text-muted-foreground">
             From
           </label>
           <Select value={from} onValueChange={setFrom}>
-            <SelectTrigger className="h-12 bg-background">
+            <SelectTrigger className="h-12 w-full bg-background">
               <div className="flex items-center gap-3">
                 <MapPin className="w-5 h-5 text-primary" />
                 <SelectValue placeholder="Departure city" />
@@ -235,10 +238,10 @@ export function SearchBox({
         </div>
 
         {/* To */}
-        <div className="space-y-2">
+        <div className="space-y-2 min-w-0">
           <label className="text-sm font-medium text-muted-foreground">To</label>
           <Select value={to} onValueChange={setTo}>
-            <SelectTrigger className="h-12 bg-background">
+            <SelectTrigger className="h-12 w-full bg-background">
               <div className="flex items-center gap-3">
                 <MapPin className="w-5 h-5 text-primary" />
                 <SelectValue placeholder="Destination city" />
@@ -255,46 +258,60 @@ export function SearchBox({
         </div>
 
         {/* Date */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">
+        <div className="space-y-2 min-w-0">
+          <label htmlFor="search-date" className="text-sm font-medium text-muted-foreground">
             {tripType === "round-trip" ? "Departure Date" : "Date"}
           </label>
-          <div className="relative">
-            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
+          <div className="relative w-full min-w-0">
+            <Calendar className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-primary z-10" />
+            {!date && (
+              <span className="pointer-events-none absolute left-11 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                Select date
+              </span>
+            )}
             <Input
+              id="search-date"
               type="date"
               value={date}
+              min={today}
               onChange={(e) => setDate(e.target.value)}
-              className="h-12 pl-11 bg-background"
+              className={`h-12 pl-11 bg-background leading-[3rem] ${!date ? "text-transparent" : ""}`}
             />
           </div>
         </div>
 
         {/* Return Date (only for round trip) */}
         {tripType === "round-trip" && (
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-muted-foreground">
+          <div className="space-y-2 min-w-0">
+            <label htmlFor="search-return-date" className="text-sm font-medium text-muted-foreground">
               Return Date
             </label>
-            <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
+            <div className="relative w-full min-w-0">
+              <Calendar className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-primary z-10" />
+              {!returnDate && (
+                <span className="pointer-events-none absolute left-11 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                  Select return date
+                </span>
+              )}
               <Input
+                id="search-return-date"
                 type="date"
                 value={returnDate}
+                min={date || today}
                 onChange={(e) => setReturnDate(e.target.value)}
-                className="h-12 pl-11 bg-background"
+                className={`h-12 pl-11 bg-background leading-[3rem] ${!returnDate ? "text-transparent" : ""}`}
               />
             </div>
           </div>
         )}
 
         {/* Passengers */}
-        <div className="space-y-2">
+        <div className="space-y-2 min-w-0">
           <label className="text-sm font-medium text-muted-foreground">
             Passengers
           </label>
           <Select value={passengers} onValueChange={setPassengers}>
-            <SelectTrigger className="h-12 bg-background">
+            <SelectTrigger className="h-12 w-full bg-background">
               <div className="flex items-center gap-3">
                 <Users className="w-5 h-5 text-primary" />
                 <SelectValue />

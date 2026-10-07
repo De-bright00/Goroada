@@ -1,10 +1,12 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Menu, X, User, ChevronDown } from "lucide-react"
 import { Logo } from "./logo"
 import { Button } from "@/components/ui/button"
+import { toast } from "sonner"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,7 +21,35 @@ interface NavbarProps {
 }
 
 export function Navbar({ isLoggedIn = false, userName = "User" }: NavbarProps) {
+  const router = useRouter()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [localIsLoggedIn, setLocalIsLoggedIn] = useState(isLoggedIn)
+  const [localUserName, setLocalUserName] = useState(userName)
+
+  useEffect(() => {
+    // Check localStorage for active user session on client-side mount
+    const savedUser = localStorage.getItem("goroada_user")
+    if (savedUser) {
+      try {
+        const userObj = JSON.parse(savedUser)
+        setLocalIsLoggedIn(true)
+        setLocalUserName(userObj.fullName || userObj.name || userObj.email || "Passenger")
+      } catch (err) {
+        console.error("Failed to parse local session:", err)
+      }
+    } else {
+      setLocalIsLoggedIn(isLoggedIn)
+      setLocalUserName(userName)
+    }
+  }, [isLoggedIn, userName])
+
+  const handleLogout = () => {
+    localStorage.removeItem("goroada_user")
+    setLocalIsLoggedIn(false)
+    setLocalUserName("User")
+    toast.success("Logged out successfully!")
+    router.push("/")
+  }
 
   const navLinks = [
     { href: "/", label: "Home" },
@@ -52,14 +82,14 @@ export function Navbar({ isLoggedIn = false, userName = "User" }: NavbarProps) {
 
           {/* Auth Section */}
           <div className="hidden md:flex items-center gap-3">
-            {isLoggedIn ? (
+            {localIsLoggedIn ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="gap-2">
+                  <Button variant="ghost" className="gap-2 cursor-pointer">
                     <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                       <User className="w-4 h-4 text-primary" />
                     </div>
-                    <span className="text-sm font-medium">{userName}</span>
+                    <span className="text-sm font-medium">{localUserName}</span>
                     <ChevronDown className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -73,8 +103,11 @@ export function Navbar({ isLoggedIn = false, userName = "User" }: NavbarProps) {
                   <DropdownMenuItem asChild>
                     <Link href="/profile">Profile & Settings</Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/admin">Admin Panel</Link>
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive">
+                  <DropdownMenuItem className="text-destructive cursor-pointer" onClick={handleLogout}>
                     Logout
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -93,7 +126,7 @@ export function Navbar({ isLoggedIn = false, userName = "User" }: NavbarProps) {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2 rounded-lg hover:bg-muted"
+            className="md:hidden p-2 rounded-lg hover:bg-muted cursor-pointer"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? (
@@ -120,7 +153,7 @@ export function Navbar({ isLoggedIn = false, userName = "User" }: NavbarProps) {
               </Link>
             ))}
             <div className="pt-4 border-t border-border space-y-2">
-              {isLoggedIn ? (
+              {localIsLoggedIn ? (
                 <>
                   <Link
                     href="/dashboard"
@@ -143,14 +176,31 @@ export function Navbar({ isLoggedIn = false, userName = "User" }: NavbarProps) {
                   >
                     Profile
                   </Link>
+                  <Link
+                    href="/admin"
+                    className="block py-2 text-sm font-medium text-primary"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Admin Panel
+                  </Link>
+                  <Button
+                    variant="destructive"
+                    className="w-full text-left justify-start mt-2"
+                    onClick={() => {
+                      setMobileMenuOpen(false)
+                      handleLogout()
+                    }}
+                  >
+                    Logout
+                  </Button>
                 </>
               ) : (
                 <div className="flex gap-3">
                   <Button variant="outline" className="flex-1" asChild>
-                    <Link href="/auth?mode=login">Login</Link>
+                    <Link href="/auth?mode=login" onClick={() => setMobileMenuOpen(false)}>Login</Link>
                   </Button>
                   <Button className="flex-1" asChild>
-                    <Link href="/auth?mode=signup">Sign up</Link>
+                    <Link href="/auth?mode=signup" onClick={() => setMobileMenuOpen(false)}>Sign up</Link>
                   </Button>
                 </div>
               )}

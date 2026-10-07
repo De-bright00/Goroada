@@ -1,313 +1,147 @@
 "use client"
 
-import { use, useState, Suspense } from "react"
+import { use, useState, useEffect, Suspense } from "react"
 import Link from "next/link"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Label } from "@/components/ui/label"
+import { toast } from "sonner"
 import {
   ArrowLeft,
   CreditCard,
   Building2,
   Wallet,
-  Gift,
-  Copy,
-  Check,
+  Clock,
   MapPin,
+  Shield,
+  Star,
 } from "lucide-react"
 
-// Mock trip data
-const mockTrip = {
-  id: "1",
-  operator: "GUO Transport",
-  from: "Lagos",
-  to: "Abuja",
-  fromTerminal: "Jibowu Terminal, Yaba",
-  toTerminal: "Utako Terminal, Abuja",
-  departureTime: "06:00",
-  arrivalTime: "14:30",
-  duration: "8h 30m",
-  date: "Mon, 15 Apr 2024",
-  price: 18500,
-  busType: "Executive Coach",
-}
-
-const bankDetails = {
-  bankName: "Stanbic IBTC",
-  accountNumber: "1234567891",
-  accountName: "Goroada Nigeria Limited",
-}
-
-function PaymentContent({ id }: { id: string }) {
+function PaymentContent({ id: bookingId }: { id: string }) {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const passengers = parseInt(searchParams.get("passengers") || "1")
-  const total = parseInt(searchParams.get("total") || String(mockTrip.price))
-
-  const [paymentMethod, setPaymentMethod] = useState("card")
-  const [copied, setCopied] = useState(false)
+  
+  const [booking, setBooking] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
   const [processing, setProcessing] = useState(false)
-  const [cardData, setCardData] = useState({
-    cardNumber: "",
-    expiry: "",
-    cvv: "",
-    cardName: "",
-  })
-  const [referralCode, setReferralCode] = useState("")
-  const [walletBalance] = useState(25000)
+  const [gateway, setGateway] = useState<"paystack" | "flutterwave">("paystack")
+  const [timeLeft, setTimeLeft] = useState<number | null>(null)
+  const [expired, setExpired] = useState(false)
 
-  const trip = { ...mockTrip, id }
+  // 1. Fetch booking details
+  useEffect(() => {
+    async function loadBooking() {
+      try {
+        setLoading(true)
+        const res = await fetch(`/api/bookings/${bookingId}`)
+        if (res.ok) {
+          const data = await res.json()
+          setBooking(data)
+          
+          if (data.status === "released" || data.status === "failed") {
+            setExpired(true)
+          } else if (data.status === "confirmed") {
+            router.push(`/success/${bookingId}`)
+          } else if (data.holdExpiresAt) {
+            const expiry = new Date(data.holdExpiresAt).getTime()
+            const diff = Math.max(0, Math.floor((expiry - Date.now()) / 1000))
+            setTimeLeft(diff)
+            if (diff <= 0) setExpired(true)
+          }
+        } else {
+          toast.error("Failed to load booking details.")
+        }
+      } catch (err) {
+        console.error("Payment load error:", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadBooking()
+  }, [bookingId, router])
 
-  const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+  // 2. Timer countdown
+  useEffect(() => {
+    if (timeLeft === null || expired) return
+
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev === null || prev <= 1) {
+          clearInterval(interval)
+          setExpired(true)
+          toast.error("Booking hold expired.")
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [timeLeft, expired])
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs < 10 ? "0" : ""}${secs}`
   }
 
-  const handlePayment = () => {
-    setProcessing(true)
-    // Simulate payment processing
-    setTimeout(() => {
-      router.push(`/success/${id}`)
-    }, 2000)
-  }
+  const handlePayment = async () => {
+    if (expired) {
+      toast.error("Booking hold expired. Please restart search.")
+      return
+    }
 
-  const renderPaymentForm = () => {
-    switch (paymentMethod) {
-      case "card":
-        return (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="cardNumber">Card Number</Label>
-              <div className="relative">
-                <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  id="cardNumber"
-                  placeholder="1234 5678 9012 3456"
-                  value={cardData.cardNumber}
-                  onChange={(e) =>
-                    setCardData({ ...cardData, cardNumber: e.target.value })
-                  }
-                  className="pl-10"
-                  maxLength={19}
-                />
-              </div>
-            </div>
+    try {
+      setProcessing(true)
+      
+      const email = "passenger@goroada.com" // Default or retrieved passenger email
+      const callbackUrl = `${window.location.origin}/success/${bookingId}`
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="expiry" className="text-xs sm:text-sm">Expiry Date</Label>
-                <Input
-                  id="expiry"
-                  placeholder="MM/YY"
-                  value={cardData.expiry}
-                  onChange={(e) =>
-                    setCardData({ ...cardData, expiry: e.target.value })
-                  }
-                  maxLength={5}
-                  className="text-sm"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="cvv" className="text-xs sm:text-sm">CVV</Label>
-                <Input
-                  id="cvv"
-                  placeholder="123"
-                  value={cardData.cvv}
-                  onChange={(e) =>
-                    setCardData({ ...cardData, cvv: e.target.value })
-                  }
-                  maxLength={4}
-                  type="password"
-                  className="text-sm"
-                />
-              </div>
-            </div>
+      // Call payments initiation API
+      const res = await fetch("/api/payments/initiate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bookingId,
+          gateway,
+          email,
+          callbackUrl,
+        }),
+      })
 
-            <div className="space-y-2">
-              <Label htmlFor="cardName" className="text-xs sm:text-sm">Name on Card</Label>
-              <Input
-                id="cardName"
-                placeholder="John Doe"
-                value={cardData.cardName}
-                onChange={(e) =>
-                  setCardData({ ...cardData, cardName: e.target.value })
-                }
-                className="text-sm"
-              />
-            </div>
+      const data = await res.json()
 
-            <Button
-              className="w-full"
-              onClick={handlePayment}
-              disabled={processing}
-            >
-              {processing ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                  Processing...
-                </>
-              ) : (
-                <>Pay &#8358;{total.toLocaleString()}</>
-              )}
-            </Button>
-          </div>
-        )
+      if (!res.ok) {
+        toast.error(data.message || "Failed to initiate payment. Please try again.")
+        return
+      }
 
-      case "bank":
-        return (
-          <div className="space-y-4 sm:space-y-6">
-            <div className="bg-muted/50 rounded-xl p-4 sm:p-6 space-y-3 sm:space-y-4">
-              <p className="text-xs sm:text-sm text-muted-foreground text-center">
-                Transfer the exact amount to the account below
-              </p>
+      toast.success(`Redirecting to ${gateway === "paystack" ? "Paystack" : "Flutterwave"}...`)
+      
+      // Redirect passenger to checkout page
+      window.location.href = data.authorizationUrl
 
-              <div className="space-y-2 sm:space-y-3">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-card rounded-lg gap-2">
-                  <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground">Bank Name</p>
-                    <p className="font-semibold text-sm truncate">{bankDetails.bankName}</p>
-                  </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-card rounded-lg gap-2">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs text-muted-foreground">
-                      Account Number
-                    </p>
-                    <p className="font-semibold font-mono text-sm break-all">
-                      {bankDetails.accountNumber}
-                    </p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleCopy(bankDetails.accountNumber)}
-                    className="flex-shrink-0"
-                  >
-                    {copied ? (
-                      <Check className="w-4 h-4 text-green-500" />
-                    ) : (
-                      <Copy className="w-4 h-4" />
-                    )}
-                  </Button>
-                </div>
-
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-card rounded-lg gap-2">
-                  <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground">Account Name</p>
-                    <p className="font-semibold text-sm truncate">{bankDetails.accountName}</p>
-                  </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-primary/10 rounded-lg gap-2">
-                  <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground">Amount</p>
-                    <p className="font-bold text-base sm:text-lg text-primary">
-                      &#8358;{total.toLocaleString()}
-                    </p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleCopy(total.toString())}
-                    className="flex-shrink-0"
-                  >
-                    {copied ? (
-                      <Check className="w-4 h-4 text-green-500" />
-                    ) : (
-                      <Copy className="w-4 h-4" />
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            <Button
-              className="w-full"
-              onClick={handlePayment}
-              disabled={processing}
-            >
-              {processing ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                  Verifying...
-                </>
-              ) : (
-                "I Have Made the Transfer"
-              )}
-            </Button>
-          </div>
-        )
-
-      case "wallet":
-        return (
-          <div className="space-y-4 sm:space-y-6">
-            <div className="bg-muted/50 rounded-xl p-4 sm:p-6 text-center">
-              <p className="text-xs sm:text-sm text-muted-foreground mb-2">
-                Wallet Balance
-              </p>
-              <p className="text-2xl sm:text-3xl font-bold text-secondary">
-                &#8358;{walletBalance.toLocaleString()}
-              </p>
-            </div>
-
-            <div className="space-y-2 sm:space-y-3 text-sm">
-              <div className="flex items-center justify-between py-2">
-                <span className="text-muted-foreground text-xs sm:text-sm">Trip Fare</span>
-                <span className="font-medium">&#8358;{total.toLocaleString()}</span>
-              </div>
-              <div className="flex items-center justify-between py-2 border-t border-border">
-                <span className="text-muted-foreground text-xs sm:text-sm">Balance After</span>
-                <span
-                  className={
-                    walletBalance >= total
-                      ? "text-green-500 font-semibold"
-                      : "text-destructive font-semibold"
-                  }
-                >
-                  &#8358;{(walletBalance - total).toLocaleString()}
-                </span>
-              </div>
-            </div>
-
-            {walletBalance >= total ? (
-              <Button
-                className="w-full"
-                onClick={handlePayment}
-                disabled={processing}
-              >
-                {processing ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                    Processing...
-                  </>
-                ) : (
-                  "Pay with Wallet"
-                )}
-              </Button>
-            ) : (
-              <div className="space-y-3">
-                <p className="text-xs sm:text-sm text-destructive text-center">
-                  Insufficient wallet balance
-                </p>
-                <Button variant="outline" className="w-full" asChild>
-                  <Link href="/wallet">Fund Wallet</Link>
-                </Button>
-              </div>
-            )}
-          </div>
-        )
-
-      default:
-        return null
+    } catch (err) {
+      console.error("Payment action error:", err)
+      toast.error("An error occurred during payment setup.")
+    } finally {
+      setProcessing(false)
     }
   }
+
+  if (loading || !booking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    )
+  }
+
+  const trip = booking.trip
+  const total = booking.totalAmount
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -316,76 +150,82 @@ function PaymentContent({ id }: { id: string }) {
       <main className="flex-1">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           {/* Back Button */}
-          <Button variant="ghost" className="mb-4 sm:mb-6" asChild>
-            <Link href={`/booking/${id}`}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to booking
-            </Link>
+          <Button variant="ghost" className="mb-4 sm:mb-6" onClick={() => router.back()}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
           </Button>
+
+          {/* Expiry Clock Bar */}
+          <div className={`mb-6 p-4 rounded-xl flex items-center justify-between border ${
+            expired 
+              ? "bg-destructive/10 border-destructive/20 text-destructive"
+              : "bg-amber-500/10 border-amber-500/20 text-amber-600"
+          }`}>
+            <div className="flex items-center gap-3">
+              <Clock className="w-5 h-5 flex-shrink-0" />
+              <div>
+                <p className="font-semibold text-sm">
+                  {expired ? "Time limit exceeded" : "Pending Payment Hold"}
+                </p>
+                <p className="text-xs opacity-90">
+                  {expired 
+                    ? "Seats returned to inventory. Please re-book." 
+                    : "Complete checkout before timer reaches zero to lock your seat."}
+                </p>
+              </div>
+            </div>
+            {timeLeft !== null && !expired && (
+              <span className="font-mono font-bold text-lg bg-amber-500/20 px-3 py-1 rounded-lg">
+                {formatTime(timeLeft)}
+              </span>
+            )}
+          </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
             {/* Payment Methods */}
             <div className="lg:col-span-2 space-y-4 sm:space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg sm:text-xl">Select Payment Method</CardTitle>
+                  <CardTitle className="text-lg sm:text-xl">Select Payment Gateway</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <RadioGroup
-                    value={paymentMethod}
-                    onValueChange={setPaymentMethod}
+                    value={gateway}
+                    onValueChange={(val: any) => setGateway(val)}
                     className="space-y-2 sm:space-y-3"
                   >
                     <div
                       className={`flex items-center gap-3 p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-colors ${
-                        paymentMethod === "card"
+                        gateway === "paystack"
                           ? "border-primary bg-primary/5"
                           : "border-border hover:border-primary/50"
                       }`}
-                      onClick={() => setPaymentMethod("card")}
+                      onClick={() => setGateway("paystack")}
                     >
-                      <RadioGroupItem value="card" id="card" />
+                      <RadioGroupItem value="paystack" id="paystack" />
                       <CreditCard className="w-5 h-5 text-primary flex-shrink-0" />
-                      <Label htmlFor="card" className="flex-1 cursor-pointer">
-                        <span className="font-medium text-sm">Card Payment</span>
+                      <Label htmlFor="paystack" className="flex-1 cursor-pointer">
+                        <span className="font-medium text-sm">Paystack (Recommended)</span>
                         <p className="text-xs text-muted-foreground">
-                          Pay with debit or credit card
+                          Fast checkout using card, transfer, bank app, or USSD
                         </p>
                       </Label>
                     </div>
 
                     <div
                       className={`flex items-center gap-3 p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-colors ${
-                        paymentMethod === "bank"
+                        gateway === "flutterwave"
                           ? "border-primary bg-primary/5"
                           : "border-border hover:border-primary/50"
                       }`}
-                      onClick={() => setPaymentMethod("bank")}
+                      onClick={() => setGateway("flutterwave")}
                     >
-                      <RadioGroupItem value="bank" id="bank" />
+                      <RadioGroupItem value="flutterwave" id="flutterwave" />
                       <Building2 className="w-5 h-5 text-primary flex-shrink-0" />
-                      <Label htmlFor="bank" className="flex-1 cursor-pointer">
-                        <span className="font-medium text-sm">Bank Transfer</span>
+                      <Label htmlFor="flutterwave" className="flex-1 cursor-pointer">
+                        <span className="font-medium text-sm">Flutterwave</span>
                         <p className="text-xs text-muted-foreground">
-                          Transfer directly to our bank account
-                        </p>
-                      </Label>
-                    </div>
-
-                    <div
-                      className={`flex items-center gap-3 p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-colors ${
-                        paymentMethod === "wallet"
-                          ? "border-primary bg-primary/5"
-                          : "border-border hover:border-primary/50"
-                      }`}
-                      onClick={() => setPaymentMethod("wallet")}
-                    >
-                      <RadioGroupItem value="wallet" id="wallet" />
-                      <Wallet className="w-5 h-5 text-primary flex-shrink-0" />
-                      <Label htmlFor="wallet" className="flex-1 cursor-pointer min-w-0">
-                        <span className="font-medium text-sm">Goroada Wallet</span>
-                        <p className="text-xs text-muted-foreground truncate">
-                          Balance: &#8358;{walletBalance.toLocaleString()}
+                          Secure checkout with multiple card channels and transfers
                         </p>
                       </Label>
                     </div>
@@ -393,33 +233,36 @@ function PaymentContent({ id }: { id: string }) {
                 </CardContent>
               </Card>
 
-              {/* Payment Form */}
+              {/* Confirm Pay Button */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base sm:text-lg">
-                    {paymentMethod === "card" && "Card Details"}
-                    {paymentMethod === "bank" && "Bank Transfer"}
-                    {paymentMethod === "wallet" && "Wallet Payment"}
-                  </CardTitle>
+                  <CardTitle className="text-base sm:text-lg">Checkout Summary</CardTitle>
                 </CardHeader>
-                <CardContent>{renderPaymentForm()}</CardContent>
-              </Card>
-
-              {/* Referral Code */}
-              <Card>
-                <CardContent className="p-3 sm:p-4">
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-                    <Gift className="w-5 h-5 text-primary flex-shrink-0 hidden sm:block" />
-                    <Input
-                      placeholder="Referral code (optional)"
-                      value={referralCode}
-                      onChange={(e) => setReferralCode(e.target.value)}
-                      className="text-sm"
-                    />
-                    <Button variant="outline" size="sm" disabled={!referralCode} className="flex-shrink-0">
-                      Apply
-                    </Button>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Gateway selected</span>
+                    <span className="capitalize font-semibold">{gateway}</span>
                   </div>
+                  <div className="flex justify-between text-sm border-t border-border pt-3">
+                    <span className="text-muted-foreground">Amount in Naira</span>
+                    <span className="font-bold">&#8358;{total.toLocaleString()}</span>
+                  </div>
+
+                  <Button
+                    className="w-full mt-2"
+                    size="lg"
+                    onClick={handlePayment}
+                    disabled={processing || expired}
+                  >
+                    {processing ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                        Connecting gateway...
+                      </>
+                    ) : (
+                      <>Pay &#8358;{total.toLocaleString()} via {gateway === "paystack" ? "Paystack" : "Flutterwave"}</>
+                    )}
+                  </Button>
                 </CardContent>
               </Card>
             </div>
@@ -434,13 +277,13 @@ function PaymentContent({ id }: { id: string }) {
                   <div className="flex items-center gap-2 sm:gap-3">
                     <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-secondary/10 flex items-center justify-center flex-shrink-0">
                       <span className="text-xs sm:text-sm font-bold text-secondary">
-                        {trip.operator.charAt(0)}
+                        {trip.operator?.charAt(0)}
                       </span>
                     </div>
                     <div className="min-w-0">
                       <p className="font-semibold text-xs sm:text-sm truncate">{trip.operator}</p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {trip.busType}
+                      <p className="text-xs text-muted-foreground font-mono">
+                        Ref: {booking.bookingReference}
                       </p>
                     </div>
                   </div>
@@ -450,9 +293,6 @@ function PaymentContent({ id }: { id: string }) {
                       <MapPin className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
                       <div className="min-w-0">
                         <p className="font-medium text-xs sm:text-sm truncate">{trip.from}</p>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {trip.fromTerminal}
-                        </p>
                       </div>
                     </div>
 
@@ -460,9 +300,6 @@ function PaymentContent({ id }: { id: string }) {
                       <MapPin className="w-4 h-4 text-secondary mt-0.5 flex-shrink-0" />
                       <div className="min-w-0">
                         <p className="font-medium text-xs sm:text-sm truncate">{trip.to}</p>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {trip.toTerminal}
-                        </p>
                       </div>
                     </div>
                   </div>
@@ -477,8 +314,8 @@ function PaymentContent({ id }: { id: string }) {
                       <span className="font-medium">{trip.departureTime}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Passengers</span>
-                      <span className="font-medium">{passengers}</span>
+                      <span className="text-muted-foreground">Seats</span>
+                      <span className="font-medium">{booking.seatCount} seats</span>
                     </div>
                   </div>
 
