@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "sonner"
-import { supabase } from "@/lib/supabase"
+import { supabase, isSupabaseEnabled } from "@/lib/supabase"
 import { Shield, Ticket, CreditCard, Bus, Eye, EyeOff } from "lucide-react"
 
 function AuthContent() {
@@ -49,7 +49,7 @@ function AuthContent() {
     try {
       setLoading(true)
 
-      if (supabase) {
+      if (isSupabaseEnabled) {
         // Attempt Supabase login
         const { data, error } = await supabase.auth.signInWithPassword({
           email: loginEmail,
@@ -103,7 +103,7 @@ function AuthContent() {
     try {
       setLoading(true)
 
-      if (supabase) {
+      if (isSupabaseEnabled) {
         // Attempt Supabase registration
         const { data, error } = await supabase.auth.signUp({
           email: signupEmail,

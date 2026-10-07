@@ -7,8 +7,6 @@ import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import {
   ArrowLeft,
@@ -27,7 +25,7 @@ function PaymentContent({ id: bookingId }: { id: string }) {
   const [booking, setBooking] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [processing, setProcessing] = useState(false)
-  const [gateway, setGateway] = useState<"paystack" | "flutterwave">("paystack")
+  const gateway = "paystack" as const
   const [timeLeft, setTimeLeft] = useState<number | null>(null)
   const [expired, setExpired] = useState(false)
 
@@ -119,7 +117,7 @@ function PaymentContent({ id: bookingId }: { id: string }) {
         return
       }
 
-      toast.success(`Redirecting to ${gateway === "paystack" ? "Paystack" : "Flutterwave"}...`)
+      toast.success("Redirecting to Paystack...")
       
       // Redirect passenger to checkout page
       window.location.href = data.authorizationUrl
@@ -186,50 +184,21 @@ function PaymentContent({ id: bookingId }: { id: string }) {
             <div className="lg:col-span-2 space-y-4 sm:space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg sm:text-xl">Select Payment Gateway</CardTitle>
+                  <CardTitle className="text-lg sm:text-xl">Payment Method</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <RadioGroup
-                    value={gateway}
-                    onValueChange={(val: any) => setGateway(val)}
-                    className="space-y-2 sm:space-y-3"
-                  >
-                    <div
-                      className={`flex items-center gap-3 p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-colors ${
-                        gateway === "paystack"
-                          ? "border-primary bg-primary/5"
-                          : "border-border hover:border-primary/50"
-                      }`}
-                      onClick={() => setGateway("paystack")}
-                    >
-                      <RadioGroupItem value="paystack" id="paystack" />
-                      <CreditCard className="w-5 h-5 text-primary flex-shrink-0" />
-                      <Label htmlFor="paystack" className="flex-1 cursor-pointer">
-                        <span className="font-medium text-sm">Paystack (Recommended)</span>
-                        <p className="text-xs text-muted-foreground">
-                          Fast checkout using card, transfer, bank app, or USSD
-                        </p>
-                      </Label>
+                  <div className="flex items-center gap-3 p-3 sm:p-4 rounded-xl border-2 border-primary bg-primary/5">
+                    <CreditCard className="w-5 h-5 text-primary flex-shrink-0" />
+                    <div className="flex-1">
+                      <span className="font-medium text-sm">Paystack</span>
+                      <p className="text-xs text-muted-foreground">
+                        Fast checkout using card, transfer, bank app, or USSD
+                      </p>
                     </div>
-
-                    <div
-                      className={`flex items-center gap-3 p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-colors ${
-                        gateway === "flutterwave"
-                          ? "border-primary bg-primary/5"
-                          : "border-border hover:border-primary/50"
-                      }`}
-                      onClick={() => setGateway("flutterwave")}
-                    >
-                      <RadioGroupItem value="flutterwave" id="flutterwave" />
-                      <Building2 className="w-5 h-5 text-primary flex-shrink-0" />
-                      <Label htmlFor="flutterwave" className="flex-1 cursor-pointer">
-                        <span className="font-medium text-sm">Flutterwave</span>
-                        <p className="text-xs text-muted-foreground">
-                          Secure checkout with multiple card channels and transfers
-                        </p>
-                      </Label>
-                    </div>
-                  </RadioGroup>
+                    <span className="text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600">
+                      Test mode
+                    </span>
+                  </div>
                 </CardContent>
               </Card>
 
@@ -260,7 +229,7 @@ function PaymentContent({ id: bookingId }: { id: string }) {
                         Connecting gateway...
                       </>
                     ) : (
-                      <>Pay &#8358;{total.toLocaleString()} via {gateway === "paystack" ? "Paystack" : "Flutterwave"}</>
+                      <>Pay &#8358;{total.toLocaleString()} via Paystack</>
                     )}
                   </Button>
                 </CardContent>

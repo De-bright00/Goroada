@@ -19,7 +19,7 @@ export interface VerifyPaymentResult {
 }
 
 export interface PaymentGateway {
-  name: "paystack" | "flutterwave";
+  name: "paystack";
   initiate(params: InitiatePaymentParams): Promise<InitiatePaymentResult>;
   verify(gatewayReference: string): Promise<VerifyPaymentResult>;
   verifyWebhookSignature(rawBody: string, signatureHeader: string): boolean;

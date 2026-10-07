@@ -14,9 +14,9 @@ export async function POST(request: Request) {
       )
     }
 
-    if (gateway !== "paystack" && gateway !== "flutterwave") {
+    if (gateway !== "paystack") {
       return NextResponse.json(
-        { error: "INVALID_GATEWAY", message: "Gateway must be 'paystack' or 'flutterwave'" },
+        { error: "INVALID_GATEWAY", message: "Gateway must be 'paystack'" },
         { status: 400 }
       )
     }
